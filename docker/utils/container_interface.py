@@ -170,22 +170,65 @@ class ContainerInterface:
         else:
             raise RuntimeError(f"The container '{self.container_name}' is not running.")
 
-    def stop(self):
-        """Stop the running container using the Docker compose command.
+    # --- origin version ---
+    # def stop(self):
+    #     """Stop the running container using the Docker compose command.
 
-        Raises:
-            RuntimeError: If the container is not running.
-        """
+    #     Raises:
+    #         RuntimeError: If the container is not running.
+    #     """
+    #     if self.is_container_running():
+    #         print(f"[INFO] Stopping the launched docker container '{self.container_name}'...\n")
+    #         subprocess.run(
+    #             ["docker", "compose"] + self.add_yamls + self.add_profiles + self.add_env_files + ["down", "--volumes"],
+    #             check=False,
+    #             cwd=self.context_dir,
+    #             env=self.environ,
+    #         )
+    #     else:
+    #         raise RuntimeError(f"Can't stop container '{self.container_name}' as it is not running.")
+    
+    # =============================
+    # =         New Add           =
+    # =============================
+    def stop(self):
+        """Stop the running container without removing it."""
         if self.is_container_running():
             print(f"[INFO] Stopping the launched docker container '{self.container_name}'...\n")
+            # --- 关键修改：只 stop，不 down ---
             subprocess.run(
-                ["docker", "compose"] + self.add_yamls + self.add_profiles + self.add_env_files + ["down", "--volumes"],
+                ["docker", "compose"] + self.add_yamls + self.add_profiles + self.add_env_files + ["stop"],
                 check=False,
                 cwd=self.context_dir,
                 env=self.environ,
             )
         else:
-            raise RuntimeError(f"Can't stop container '{self.container_name}' as it is not running.")
+            # 如果容器没在跑，也别报错，就说已经停了
+            print(f"[INFO] Container '{self.container_name}' is already stopped.")
+
+    def down(self):
+        """Stop AND REMOVE the container and associated volumes."""
+        print(f"[INFO] Stopping and REMOVING the container '{self.container_name}' and its volumes...\n")
+        # --- 保留原始的 down 功能 ---
+        subprocess.run(
+            ["docker", "compose"] + self.add_yamls + self.add_profiles + self.add_env_files + ["down", "--volumes"],
+            check=False,
+            cwd=self.context_dir,
+            env=self.environ,
+        )
+
+    def resume(self):
+        """Start an existing (stopped) container."""
+        print(f"[INFO] Resuming the existing container '{self.container_name}'...\n")
+        subprocess.run(
+            ["docker", "compose"] + self.add_yamls + self.add_profiles + self.add_env_files + ["start"],
+            check=False,
+            cwd=self.context_dir,
+            env=self.environ,
+        )
+    # =============================
+    # =        New Add End        =
+    # =============================
 
     def copy(self, output_dir: Path | None = None):
         """Copy artifacts from the running container to the host machine.

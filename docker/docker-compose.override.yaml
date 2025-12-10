@@ -1,0 +1,16 @@
+# 这个文件专门存放你的自定义挂载
+services:
+  isaac-lab-base: # 注意：这里的服务名要和主 compose 文件里的一致
+    volumes:
+      # 把你的 checkpoints 挂载
+      - type: bind
+        source: /data3/fanzhuoyao/hf_ckpts
+        target: /workspace/hf_ckpts
+      # 把 lerobot 挂载到 /workspace/lerobot
+      - type: bind
+        source: /data3/fanzhuoyao/MY_WORKS/EI/lerobot
+        target: /workspace/lerobot
+      # 把 openvla 挂载到 /workspace/openvla
+      # - type: bind
+      #   source: /data3/fanzhuoyao/MY_WORKS/EI/openvla
+      #   target: /workspace/openvla

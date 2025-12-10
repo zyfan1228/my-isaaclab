@@ -82,7 +82,10 @@ def parse_cli_args() -> argparse.Namespace:
     subparsers.add_parser(
         "copy", help="Copy build and logs artifacts from the container to the host machine.", parents=[parent_parser]
     )
-    subparsers.add_parser("stop", help="Stop the docker container and remove it.", parents=[parent_parser])
+    subparsers.add_parser("stop", help="Stop the docker container without remove it.", parents=[parent_parser])
+    subparsers.add_parser("down", help="Stop and REMOVE the container and volumes.", parents=[parent_parser])
+    subparsers.add_parser("pause", help="Alias for 'stop'. Stops the container without removing it.", parents=[parent_parser])
+    subparsers.add_parser("resume", help="Alias for 'start_existing'. Starts an existing container.", parents=[parent_parser])
 
     # parse the arguments to determine the command
     args = parser.parse_args()
@@ -128,10 +131,15 @@ def main(args: argparse.Namespace):
         ci.config(args.output_yaml)
     elif args.command == "copy":
         ci.copy()
-    elif args.command == "stop":
+    elif args.command == "stop" or args.command == 'pause':
         # stop the container
         ci.stop()
         # cleanup the x11 forwarding
+        x11_utils.x11_cleanup(ci.statefile)
+    elif args.command == "resume": 
+        ci.resume()
+    elif args.command == "down": 
+        ci.down()
         x11_utils.x11_cleanup(ci.statefile)
     else:
         raise RuntimeError(f"Invalid command provided: {args.command}. Please check the help message.")

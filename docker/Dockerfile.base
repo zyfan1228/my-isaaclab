@@ -48,6 +48,12 @@ RUN --mount=type=cache,target=/var/cache/apt \
     apt -y autoremove && apt clean autoclean && \
     rm -rf /var/lib/apt/lists/*
 
+# 配置 pip 清华源 (写入配置文件，确保 Isaac Sim 内部 Python 也能读取)
+# 使用 DOCKER_USER_HOME 变量(通常是/root)来定位
+RUN mkdir -p ${DOCKER_USER_HOME}/.pip && \
+    echo "[global]" > ${DOCKER_USER_HOME}/.pip/pip.conf && \
+    echo "index-url = https://pypi.tuna.tsinghua.edu.cn/simple" >> ${DOCKER_USER_HOME}/.pip/pip.conf
+
 # Copy the Isaac Lab directory (files to exclude are defined in .dockerignore)
 COPY ../ ${ISAACLAB_PATH}
 
